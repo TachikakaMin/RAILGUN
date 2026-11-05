@@ -54,8 +54,11 @@ private:
         
         for (; iter != end; ++iter) {
             Position pos;
-            pos.x = static_cast<uint8_t>(std::stoi((*iter)[1].str()));
-            pos.y = static_cast<uint8_t>(std::stoi((*iter)[2].str()));
+            // LaCAM writes (x, y) = (col, row). read_map() and the distance maps are indexed
+            // [row][col], and lacam_online_native / generate_offline_data store (row, col).
+            // Store (row, col) here too; otherwise agents land on obstacles in training.
+            pos.x = static_cast<uint8_t>(std::stoi((*iter)[2].str()));  // row
+            pos.y = static_cast<uint8_t>(std::stoi((*iter)[1].str()));  // col
             positions.push_back(pos);
         }
         

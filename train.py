@@ -122,7 +122,9 @@ def create_offline_train_loaders(args):
     # 这样既保留不同 .mbin 文件之间的随机性，又避免文件内 step 级随机 seek
     use_step_based = args.offline_total_steps > 0
     use_file_order_shuffle = use_step_based and not args.distributed
-    should_shuffle = use_step_based and not use_file_order_shuffle
+    # Shuffle samples unless the non-distributed step-based mode already shuffles at file level.
+    # (Before this fix, the default epoch-based mode never shuffled.)
+    should_shuffle = not use_file_order_shuffle
     if use_file_order_shuffle:
         should_shuffle = False
         if args.local_rank == 0:
