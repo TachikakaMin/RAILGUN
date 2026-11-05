@@ -234,10 +234,12 @@ static PyObject* construct_input_feature_cpp(PyObject* self, PyObject* args) {
                     (agent_plane[(static_cast<npy_intp>(agent_x - 1) * width) + agent_y] == 0.0f);
                 bool right_valid = (agent_x < height - 1) &&
                     (agent_plane[(static_cast<npy_intp>(agent_x + 1) * width) + agent_y] == 0.0f);
-                bool up_valid = (agent_y > 0) &&
-                    (agent_plane[(static_cast<npy_intp>(agent_x) * width) + (agent_y - 1)] == 0.0f);
-                bool down_valid = (agent_y < width - 1) &&
+                // "up" is y+1 and "down" is y-1, so grad_j = +1 means action 1 (y+1) moves closer to
+                // the goal. This matches the action labels and the inference-time feature code.
+                bool up_valid = (agent_y < width - 1) &&
                     (agent_plane[(static_cast<npy_intp>(agent_x) * width) + (agent_y + 1)] == 0.0f);
+                bool down_valid = (agent_y > 0) &&
+                    (agent_plane[(static_cast<npy_intp>(agent_x) * width) + (agent_y - 1)] == 0.0f);
 
                 // 计算有效方向的距离
                 if (left_valid) {
@@ -252,12 +254,12 @@ static PyObject* construct_input_feature_cpp(PyObject* self, PyObject* args) {
                 }
                 if (up_valid) {
                     up_dist = static_cast<float>(
-                        distance_accessor.get_distance(agent_x, agent_y - 1, goal_x, goal_y)
+                        distance_accessor.get_distance(agent_x, agent_y + 1, goal_x, goal_y)
                     );
                 }
                 if (down_valid) {
                     down_dist = static_cast<float>(
-                        distance_accessor.get_distance(agent_x, agent_y + 1, goal_x, goal_y)
+                        distance_accessor.get_distance(agent_x, agent_y - 1, goal_x, goal_y)
                     );
                 }
 
